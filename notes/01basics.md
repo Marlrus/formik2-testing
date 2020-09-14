@@ -62,3 +62,151 @@ Inside the Formik component in the render props props we can destructure and see
 ```
 
 The values prop comes from initialValues and the values that change after that, handleChange will be our Fn to handle changes and we pass it to our MaterialUI Component. We will do the same with handleBlur. And we then pass handleSubmit to our form which will use the Fn that we defined on onSubmit in our Formik Component. This would be the same with any Component we would be using in our Component, even the base HTML tags.
+
+We then run our project and can see that we have our Material UI TextInput with the value bob preset to it beacuse of the props that we passed to our Formik component. If we type something into the TextInput and hit enter, we trigger our onSumbit function and we can see that we get a log of the object with the prop firstName and the value that our TextInput has.
+
+We add a pre-tag to show our value dynamically. With these arguments we show the JSON data prettier:
+
+```JSX
+<pre>{JSON.stringify(values, null, 2)}</pre>
+```
+
+We can also notice that onChange uses a standard handleChange() Fn that tracks the change of our inputs dynamically. We then add a Submit button using material UI to submit our form.
+
+## Using onSubmit options
+
+We use the setSubmitting option to disable the submit button upon submission. It takes a boolean as an argument, and then will reset:
+
+```JSX
+onSubmit={(data, { setSubmitting }) => {
+  setSubmitting(true);
+  // make async call
+  console.log({ data });
+  setSubmitting(false);
+}}
+```
+
+We use it in our form by passing the **isSubmitting prop** and then using it on the disabled attribute of our button:
+
+```JSX
+({ values, isSubmitting, handleChange, handleBlur, handleSubmit }) => (
+  ...
+  <Button disabled={isSubmitting} type='submit'>
+    Submit
+  </Button>
+  ...
+)
+```
+
+There are also other methods such as **resetForm** that unfortunately I cannot get to autocomplete.
+
+## Field Component & Form Component
+
+If we create more inputs, we might have a lot of duplicate code as we need to pass the props to each different input. This is where we use the **Field** Component from Formik. We create a new input field for lastName and then replace the TextField component from material UI with the Field component:
+
+```JSX
+<Field name='firstName' type='input' as={TextField} />
+<Field name='lastName' type='input' as={TextField} />
+```
+
+Here we set the name matching the keys in our initialValues and then set the type to input. We use the **as prop** to pass the component that will be rendered. Now we can see that the form is working as it was before but the code is much cleaner. This automatically maps the props to and how they are supposed to be. We can also **add placeholders if we want**. We can now remove handleChange and handleBlur in our destructured **render props**.
+
+We import Form and replace our JS form component with it. This will automatically pass our onSubmit method to this component, meaning that we don't have to write the code out and we can now remove most of the **render props** that we destructured:
+
+```JSX
+{({ values, isSubmitting}) => (
+  <Form>
+    <Field
+      placeholder='first name'
+      name='firstName'
+      type='input'
+      as={TextField}
+    />
+  ...
+```
+
+### Adding more Fields
+
+We create a Field that uses the Material UI Checkbox component, with a name isTall that is set in initialValues as false.
+
+```JSX
+<Field name='isTall' type='checkbox' as={Checkbox} />
+```
+
+We then create a new initialValue `cookies: []` which will be an array of the cookies we can eat. To create multiple checkboxes that will affect this value, we use the same name for all the fields which will automatically handle them as expected.
+
+```JSX
+<div>Cookies:</div>
+<Field
+  name='cookies'
+  type='checkbox'
+  value='chocolate chip'
+  as={Checkbox}
+/>
+<Field
+  name='cookies'
+  type='checkbox'
+  value='snickerdoodle'
+  as={Checkbox}
+/>
+<Field
+  name='cookies'
+  type='checkbox'
+  value='mint chip'
+  as={Checkbox}
+/>
+```
+
+Now we have 3 checkboxes and we can see that the values for the cookies get added to the Array when we check each checkbox. The important thing is to match the name, the initial value is not as important.
+
+### Radio
+
+We create a new value _yoghurt_ in our initialValues and then we create 3 Field Components with type radio and use Material UIs Radio Component. Since all the fields share the name, we can only pick one of the three, just as you expect on Radios in a form.
+
+```JSX
+<div> Yoghurt:</div>
+<Field name='yoghurt' type='radio' value='peach' as={Radio} />
+<Field name='yoghurt' type='radio' value='blueberry' as={Radio} />
+<Field name='yoghurt' type='radio' value='apple' as={Radio} />
+```
+
+## Custom Radio
+
+We see how Material UI works with Radio components and their labels. We then create a custom Fn that will use the component that we want and will work in a generic way. We call it **MyRadio**:
+
+```JSX
+const MyRadio = ({label, ...props}) => {
+  const [field, meta] = useField(props)
+  return <FormControlLabel {...field} control={<Radio />} label={label} />;
+};
+```
+
+This component will take an object with a label, and other props that we will pass to the component. We use a Formik hook called useField that returns a **field** object that has a ton of values such as: **name, onBlur, onChange, value, checked, multiple**. The **meta** object that comes from the hook has: **error, initialError, initialTouched, initialValue, touched, value**. We can temporarily ignore this value.
+
+### Typing our Component
+
+We CTRL click useField and see the values that it takes. We see that it expects string | FieldAttributes. We create the type MyRadioProps and pass it to the React.FC. We use it and TS loves us again:
+
+```JSX
+type MyRadioProps = { label: string } & FieldAttributes<{}>
+
+const MyRadio: React.FC<MyRadioProps> = ({label, ...props}) => {
+  const [field] = useField(props)
+  return <FormControlLabel {...field} control={<Radio />} label={label} />;
+};
+```
+
+We pass an empty object, but if we check the typing it just does & T with that object, meaning that it uses the normal object and if we pass an empty one it is okay. We then use this component in our form:
+
+```JSX
+<MyRadio name='yoghurt' type='radio' value='peach' label='peach' />
+<MyRadio
+  name='yoghurt'
+  type='radio'
+  value='blueberry'
+  label='blueberry'
+/>
+<MyRadio name='yoghurt' type='radio' value='apple' label='apple' />
+```
+
+This will add a label to our Radios and render them. This is probably the same pattern that the Field component uses, except that we slightly customized it.

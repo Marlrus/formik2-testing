@@ -1,27 +1,94 @@
 import React from 'react';
-import { Formik } from 'formik';
-import { TextField } from '@material-ui/core';
+import { Formik, Field, Form, useField, FieldAttributes } from 'formik';
+import {
+  Button,
+  TextField,
+  Checkbox,
+  Radio,
+  FormControlLabel,
+} from '@material-ui/core';
 
 import './App.css';
+
+type MyRadioProps = { label: string } & FieldAttributes<{}>;
+
+const MyRadio: React.FC<MyRadioProps> = ({ label, ...props }) => {
+  const [field] = useField(props);
+  return <FormControlLabel {...field} control={<Radio />} label={label} />;
+};
 
 function App() {
   return (
     <div>
       <Formik
-        initialValues={{ firstName: 'bob' }}
-        onSubmit={data => {
-          console.log(data);
+        initialValues={{
+          firstName: '',
+          lastName: '',
+          isTall: false,
+          cookies: [],
+          yoghurt: '',
+        }}
+        onSubmit={(data, { setSubmitting }) => {
+          setSubmitting(true);
+          // make async call
+          console.log({ data });
+          setSubmitting(false);
         }}
       >
-        {({ values, handleChange, handleBlur, handleSubmit }) => (
-          <form onSubmit={handleSubmit}>
-            <TextField
+        {({ values, isSubmitting }) => (
+          <Form>
+            <Field
+              placeholder='first name'
               name='firstName'
-              value={values.firstName}
-              onChange={handleChange}
-              onBlur={handleBlur}
+              type='input'
+              as={TextField}
             />
-          </form>
+            <div>
+              <Field
+                placeholder='last name'
+                name='lastName'
+                type='input'
+                as={TextField}
+              />
+            </div>
+            <div>
+              <Field name='isTall' type='checkbox' as={Checkbox} />
+              <div>Cookies:</div>
+              <Field
+                name='cookies'
+                type='checkbox'
+                value='chocolate chip'
+                as={Checkbox}
+              />
+              <Field
+                name='cookies'
+                type='checkbox'
+                value='snickerdoodle'
+                as={Checkbox}
+              />
+              <Field
+                name='cookies'
+                type='checkbox'
+                value='mint chip'
+                as={Checkbox}
+              />
+            </div>
+            <div> Yoghurt:</div>
+            <MyRadio name='yoghurt' type='radio' value='peach' label='peach' />
+            <MyRadio
+              name='yoghurt'
+              type='radio'
+              value='blueberry'
+              label='blueberry'
+            />
+            <MyRadio name='yoghurt' type='radio' value='apple' label='apple' />
+            <div>
+              <Button disabled={isSubmitting} type='submit'>
+                Submit
+              </Button>
+            </div>
+            <pre>{JSON.stringify(values, null, 2)}</pre>
+          </Form>
         )}
       </Formik>
     </div>
