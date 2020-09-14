@@ -210,3 +210,24 @@ We pass an empty object, but if we check the typing it just does & T with that o
 ```
 
 This will add a label to our Radios and render them. This is probably the same pattern that the Field component uses, except that we slightly customized it.
+
+## Custom MyTextField Err Handling
+
+We might want to use this same pattern if we want to have Validation or show an error:
+
+```JSX
+const MyTextField: React.FC<FieldAttributes<{}>> = ({
+  placeholder,
+  ...props
+}) => {
+  const [field, meta] = useField(props);
+  const errorText = meta.error && meta.touched ? meta.error : '';
+  return (
+    <TextField placeholder={placeholder} {...field} helperText={errorText} />
+  );
+};
+```
+
+In this component we use both field, meta, we pass field as props, and meta for the errors we show. We use a ternary that creates an errorText value that will have the value **meta.error** of there is an error and the element has been touched. Otherwise the err will not display. We look into the documentation of TextField in Material UI and see that the text that we want to display is under the _helperText_ prop. Therefore we pass our errorText to that property in the Component.
+
+We separate placeholder because useField will not use the placeholder prop and we will loose it, so we just pass it to TextField as its own prop.
