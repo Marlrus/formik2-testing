@@ -24,7 +24,12 @@ const MyTextField: React.FC<FieldAttributes<{}>> = ({
   const [field, meta] = useField(props);
   const errorText = meta.error && meta.touched ? meta.error : '';
   return (
-    <TextField placeholder={placeholder} {...field} helperText={errorText} />
+    <TextField
+      placeholder={placeholder}
+      {...field}
+      helperText={errorText}
+      error={!!errorText}
+    />
   );
 };
 
@@ -39,6 +44,13 @@ function App() {
           cookies: [],
           yoghurt: '',
         }}
+        validate={values => {
+          const errors: Record<string, string> = {};
+
+          if (values.firstName.includes('bob')) errors.firstName = 'no bob';
+
+          return errors;
+        }}
         onSubmit={(data, { setSubmitting }) => {
           setSubmitting(true);
           // make async call
@@ -46,13 +58,12 @@ function App() {
           setSubmitting(false);
         }}
       >
-        {({ values, isSubmitting }) => (
+        {({ values, errors, isSubmitting }) => (
           <Form>
             <MyTextField
               placeholder='first name'
               name='firstName'
               type='input'
-              as={TextField}
             />
             <div>
               <Field
@@ -99,6 +110,7 @@ function App() {
               </Button>
             </div>
             <pre>{JSON.stringify(values, null, 2)}</pre>
+            <pre>{JSON.stringify(errors, null, 2)}</pre>
           </Form>
         )}
       </Formik>

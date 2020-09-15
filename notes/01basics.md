@@ -231,3 +231,13 @@ const MyTextField: React.FC<FieldAttributes<{}>> = ({
 In this component we use both field, meta, we pass field as props, and meta for the errors we show. We use a ternary that creates an errorText value that will have the value **meta.error** of there is an error and the element has been touched. Otherwise the err will not display. We look into the documentation of TextField in Material UI and see that the text that we want to display is under the _helperText_ prop. Therefore we pass our errorText to that property in the Component.
 
 We separate placeholder because useField will not use the placeholder prop and we will loose it, so we just pass it to TextField as its own prop.
+
+We remove the **as** prop in our MyTextField component, as we are now returning it in MyTextField and end up with:
+
+```TSX
+<MyTextField
+  placeholder='first name'
+  name='firstName'
+  type='input'
+/>
+```
